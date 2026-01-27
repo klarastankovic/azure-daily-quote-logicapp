@@ -1,0 +1,1 @@
+# azure-daily-quote-logicapp
