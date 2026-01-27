@@ -1,0 +1,156 @@
+{
+    "$schema": "https://schema.management.azure.com/schemas/2019-04-01/deploymentTemplate.json#",
+    "contentVersion": "1.0.0.0",
+    "parameters": {
+        "workflows_daily_quote_logicapp_name": {
+            "defaultValue": "daily-quote-logicapp",
+            "type": "String"
+        },
+        "connections_outlook_externalid": {
+            "defaultValue": "/subscriptions/dac999ac-0095-49ce-8e03-04e822a1718f/resourceGroups/logicapp-demo-rg/providers/Microsoft.Web/connections/outlook",
+            "type": "String"
+        }
+    },
+    "variables": {},
+    "resources": [
+        {
+            "type": "Microsoft.Logic/workflows",
+            "apiVersion": "2017-07-01",
+            "name": "[parameters('workflows_daily_quote_logicapp_name')]",
+            "location": "germanywestcentral",
+            "properties": {
+                "state": "Enabled",
+                "definition": {
+                    "$schema": "https://schema.management.azure.com/providers/Microsoft.Logic/schemas/2016-06-01/workflowdefinition.json#",
+                    "contentVersion": "1.0.0.0",
+                    "parameters": {
+                        "$connections": {
+                            "defaultValue": {},
+                            "type": "Object"
+                        }
+                    },
+                    "triggers": {
+                        "Recurrence": {
+                            "recurrence": {
+                                "interval": 1,
+                                "frequency": "Day",
+                                "timeZone": "Central European Standard Time",
+                                "startTime": "2026-01-27",
+                                "schedule": {
+                                    "hours": [
+                                        9
+                                    ],
+                                    "minutes": [
+                                        0
+                                    ]
+                                }
+                            },
+                            "evaluatedRecurrence": {
+                                "interval": 1,
+                                "frequency": "Day",
+                                "timeZone": "Central European Standard Time",
+                                "startTime": "2026-01-27",
+                                "schedule": {
+                                    "hours": [
+                                        9
+                                    ],
+                                    "minutes": [
+                                        0
+                                    ]
+                                }
+                            },
+                            "type": "Recurrence",
+                            "description": "Daily quotes at 9 AM"
+                        }
+                    },
+                    "actions": {
+                        "HTTP": {
+                            "runAfter": {},
+                            "type": "Http",
+                            "inputs": {
+                                "uri": "https://api.api-ninjas.com/v2/quotes",
+                                "method": "get",
+                                "headers": {
+                                    "X-Api-Key": "CJKzUe4wjanPilxVBXa3WrMDEsMptsV1eNUDoLI6"
+                                }
+                            },
+                            "runtimeConfiguration": {
+                                "contentTransfer": {
+                                    "transferMode": "Chunked"
+                                }
+                            }
+                        },
+                        "Parse_JSON": {
+                            "runAfter": {
+                                "HTTP": [
+                                    "Succeeded"
+                                ]
+                            },
+                            "type": "ParseJson",
+                            "inputs": {
+                                "content": "@body('HTTP')",
+                                "schema": {
+                                    "type": "array",
+                                    "items": {
+                                        "type": "object",
+                                        "properties": {
+                                            "quote": {
+                                                "type": "string"
+                                            },
+                                            "author": {
+                                                "type": "string"
+                                            },
+                                            "category": {
+                                                "type": "string"
+                                            }
+                                        },
+                                        "required": [
+                                            "quote",
+                                            "author"
+                                        ]
+                                    }
+                                }
+                            }
+                        },
+                        "Send_an_email_(V2)": {
+                            "runAfter": {
+                                "Parse_JSON": [
+                                    "Succeeded"
+                                ]
+                            },
+                            "type": "ApiConnection",
+                            "inputs": {
+                                "host": {
+                                    "connection": {
+                                        "name": "@parameters('$connections')['outlook']['connectionId']"
+                                    }
+                                },
+                                "method": "post",
+                                "body": {
+                                    "To": "klara.stankovic9@outlook.com",
+                                    "Subject": "Your Daily Quote",
+                                    "Body": "<p class=\"editor-paragraph\">@{body('Parse_JSON')[0]?['quote']}<br><br>— @{body('Parse_JSON')[0]?['author']}</p><br>",
+                                    "Importance": "Normal"
+                                },
+                                "path": "/v2/Mail"
+                            }
+                        }
+                    },
+                    "outputs": {}
+                },
+                "parameters": {
+                    "$connections": {
+                        "value": {
+                            "outlook": {
+                                "id": "/subscriptions/dac999ac-0095-49ce-8e03-04e822a1718f/providers/Microsoft.Web/locations/germanywestcentral/managedApis/outlook",
+                                "connectionId": "[parameters('connections_outlook_externalid')]",
+                                "connectionName": "outlook",
+                                "connectionProperties": {}
+                            }
+                        }
+                    }
+                }
+            }
+        }
+    ]
+}
