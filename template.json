@@ -68,7 +68,7 @@
                             "runAfter": {},
                             "type": "Http",
                             "inputs": {
-                                "uri": "https://api.api-ninjas.com/v2/quotes",
+                                "uri": "https://api.api-ninjas.com/v2/quoteoftheday",
                                 "method": "get",
                                 "headers": {
                                     "X-Api-Key": "CJKzUe4wjanPilxVBXa3WrMDEsMptsV1eNUDoLI6"
@@ -100,8 +100,14 @@
                                             "author": {
                                                 "type": "string"
                                             },
-                                            "category": {
+                                            "work": {
                                                 "type": "string"
+                                            },
+                                            "categories": {
+                                                "type": "array",
+                                                "items": {
+                                                    "type": "string"
+                                                }
                                             }
                                         },
                                         "required": [
@@ -129,7 +135,7 @@
                                 "body": {
                                     "To": "klara.stankovic9@outlook.com",
                                     "Subject": "Your Daily Quote",
-                                    "Body": "<p class=\"editor-paragraph\">@{body('Parse_JSON')[0]?['quote']}<br><br>— @{body('Parse_JSON')[0]?['author']}</p><br>",
+                                    "Body": "<p class=\"editor-paragraph\">@{body('Parse_JSON')[0]?['quote']}<br>— @{body('Parse_JSON')[0]?['author']}</p><br>",
                                     "Importance": "Normal"
                                 },
                                 "path": "/v2/Mail"
