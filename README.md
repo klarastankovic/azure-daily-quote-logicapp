@@ -15,7 +15,7 @@ This project demonstrates a simple Azure Logic App that sends a motivational quo
 
 ## Architecture
 1. **Recurrence Trigger** – runs every morning  
-2. **HTTP GET** – calls https://api.api-ninjas.com/v2/quotes 
+2. **HTTP GET** – calls https://api.api-ninjas.com/v2/quoteoftheday 
 3. **Parse JSON** – extracts quote + author  
 4. **Email Connector** – sends the message  
 
